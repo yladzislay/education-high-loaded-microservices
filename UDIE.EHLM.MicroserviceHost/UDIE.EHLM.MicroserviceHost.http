@@ -1,0 +1,6 @@
+@UDIE.EHLM.MicroserviceHost_HostAddress = http://localhost:5151
+
+GET {{UDIE.EHLM.MicroserviceHost_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

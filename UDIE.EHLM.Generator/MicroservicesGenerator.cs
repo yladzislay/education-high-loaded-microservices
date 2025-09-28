@@ -1,18 +1,21 @@
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using Newtonsoft.Json;
+using UDIE.EHLM.Core;
 
 namespace UDIE.EHLM.Generator;
 
-using System.Collections.Generic;
-
 public static class MicroservicesGenerator
 {
-    public static List<MicroserviceInfo> GenerateMicroservices(string configFile)
+    public static async Task<List<MicroserviceInfo>> GenerateMicroservicesAsync(string configFile)
     {
-        var json = File.ReadAllText(configFile);
+        var json = await File.ReadAllTextAsync(configFile);
         var microserviceConfig = JsonConvert.DeserializeObject<MicroserviceConfig>(json);
+        if (microserviceConfig?.Microservices == null)
+        {
+            return new List<MicroserviceInfo>();
+        }
+
         foreach (var microserviceInfo in microserviceConfig.Microservices)
         {
             microserviceInfo.Port = GetAvailablePort();

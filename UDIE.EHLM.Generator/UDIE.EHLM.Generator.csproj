@@ -1,20 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <OutputPath>../build</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="obj\Debug\net8.0\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\UDIE.EHLM.Core\UDIE.EHLM.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="microservices.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
