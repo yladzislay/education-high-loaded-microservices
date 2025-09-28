@@ -99,6 +99,9 @@
       "System.Memory/4.5.5": {},
       "System.Threading.Channels/7.0.0": {},
       "UDIE.EHLM.Core/1.0.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.4"
+        },
         "runtime": {
           "UDIE.EHLM.Core.dll": {
             "assemblyVersion": "1.0.0",

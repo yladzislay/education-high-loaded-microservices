@@ -7,13 +7,13 @@ namespace UDIE.EHLM.Generator;
 
 public static class MicroservicesGenerator
 {
-    public static async Task<List<MicroserviceInfo>> GenerateMicroservicesAsync(string configFile)
+    public static async Task<MicroserviceConfig?> GenerateMicroservicesAsync(string configFile)
     {
         var json = await File.ReadAllTextAsync(configFile);
         var microserviceConfig = JsonConvert.DeserializeObject<MicroserviceConfig>(json);
         if (microserviceConfig?.Microservices == null)
         {
-            return new List<MicroserviceInfo>();
+            return null;
         }
 
         foreach (var microserviceInfo in microserviceConfig.Microservices)
@@ -21,7 +21,7 @@ public static class MicroservicesGenerator
             microserviceInfo.Port = GetAvailablePort();
         }
 
-        return microserviceConfig.Microservices;
+        return microserviceConfig;
     }
 
     private static int GetAvailablePort()
