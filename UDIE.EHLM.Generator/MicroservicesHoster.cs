@@ -9,12 +9,12 @@ namespace UDIE.EHLM.Generator;
 
 public class MicroservicesHoster
 {
-    private readonly List<MicroserviceInfo> _microservices;
+    private readonly MicroserviceConfig _config;
     private readonly List<Process> _runningProcesses = new();
 
-    public MicroservicesHoster(List<MicroserviceInfo> microservices)
+    public MicroservicesHoster(MicroserviceConfig config)
     {
-        _microservices = microservices;
+        _config = config;
     }
 
     public Task StartServicesAsync()
@@ -41,16 +41,26 @@ public class MicroservicesHoster
             throw new FileNotFoundException("Microservice host not found.", hostDllPath);
         }
 
-        foreach (var serviceInfo in _microservices)
+        if (_config.Microservices == null) return Task.CompletedTask;
+
+        foreach (var serviceInfo in _config.Microservices)
         {
-            var configJson = JsonConvert.SerializeObject(serviceInfo);
+            // We create a new object that contains BOTH the specific service info
+            // and the GLOBAL RabbitMQ configuration. This is what the host needs.
+            var startupConfig = new
+            {
+                ServiceInfo = serviceInfo,
+                RabbitMQConfig = _config.RabbitMQQueues
+            };
+
+            var configJson = JsonConvert.SerializeObject(startupConfig);
             var base64Config = Convert.ToBase64String(Encoding.UTF8.GetBytes(configJson));
 
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = "/home/jules/.dotnet/dotnet",
                     Arguments = $"\"{hostDllPath}\" {base64Config}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -72,6 +82,31 @@ public class MicroservicesHoster
         }
 
         return Task.CompletedTask;
+    }
+
+    public async Task StartSimulatorAsync(string hostDllPath)
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "/home/jules/.dotnet/dotnet",
+                Arguments = $"\"{hostDllPath}\" --run-simulator",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            }
+        };
+
+        process.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
+        process.ErrorDataReceived += (sender, args) => Console.WriteLine($"[SIMULATOR ERROR]: {args.Data}");
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        await process.WaitForExitAsync();
     }
 
     public void StopServices()

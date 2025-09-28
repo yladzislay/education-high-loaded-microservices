@@ -24,20 +24,39 @@ public class Program
             return;
         }
 
-        var microservices = await MicroservicesGenerator.GenerateMicroservicesAsync(configPath);
+        var microserviceConfig = await MicroservicesGenerator.GenerateMicroservicesAsync(configPath);
+        if (microserviceConfig == null || microserviceConfig.Microservices == null)
+        {
+            Console.WriteLine("Error: Failed to generate microservice configuration.");
+            return;
+        }
 
         Console.WriteLine("Generated microservices configuration:");
-        foreach (var service in microservices)
+        foreach (var service in microserviceConfig.Microservices)
         {
             Console.WriteLine($"- Service: {service.Name}, Port: {service.Port}");
         }
 
         Console.WriteLine("\n-----------------------------------\n");
 
-        var hoster = new MicroservicesHoster(microservices);
+        var hoster = new MicroservicesHoster(microserviceConfig);
         await hoster.StartServicesAsync();
 
-        Console.WriteLine("\nAll microservices started. Press any key to shut down.");
+        Console.WriteLine("\nAll microservices started.");
+
+        // Wait a moment for services to initialize their listeners
+        await Task.Delay(5000);
+
+        // Run the simulator in a separate process
+        Console.WriteLine("\n-----------------------------------\n");
+        Console.WriteLine("Starting simulator to send command...");
+
+        var hostDllPath = Path.Combine(executionDirectory, "UDIE.EHLM.MicroserviceHost.dll");
+        var simulatorHoster = new MicroservicesHoster(microserviceConfig);
+        await simulatorHoster.StartSimulatorAsync(hostDllPath);
+
+
+        Console.WriteLine("\nSimulation finished. Press any key to shut down all services.");
         Console.ReadKey();
 
         hoster.StopServices();
